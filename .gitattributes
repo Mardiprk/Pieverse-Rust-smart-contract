@@ -1,0 +1,40 @@
+# Normalize line endings for everyone, regardless of OS.
+# Git will store text files with LF in the repo and convert to the
+# platform's native line ending on checkout (CRLF on Windows, LF elsewhere).
+* text=auto eol=lf
+
+# ---- Explicit text files (force LF, no exceptions) ----
+*.md      text eol=lf
+*.txt     text eol=lf
+*.json    text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+*.toml    text eol=lf
+*.js      text eol=lf
+*.ts      text eol=lf
+*.jsx     text eol=lf
+*.tsx     text eol=lf
+*.rs      text eol=lf
+*.sol     text eol=lf
+*.sh      text eol=lf
+*.gitignore text eol=lf
+*.gitattributes text eol=lf
+
+# ---- Windows-specific scripts should keep CRLF ----
+*.bat     text eol=crlf
+*.cmd     text eol=crlf
+*.ps1     text eol=crlf
+
+# ---- Binary files: never touch, never diff ----
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.ico     binary
+*.pdf     binary
+*.zip     binary
+*.tar.gz  binary
+*.gz      binary
+*.so      binary
+*.dll     binary
+*.exe     binary

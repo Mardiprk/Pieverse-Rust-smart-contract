@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "dependencies": {
     "@coral-xyz/anchor": "^0.32.1",
     "chai": "^6.2.2"
@@ -8,5 +9,22 @@
     "@types/mocha": "^10.0.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
+=======
+  "name": "solana-skill-test",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "anchor test"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.30.1"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.16",
+    "@types/mocha": "^10.0.6",
+    "chai": "^4.4.1",
+    "mocha": "^10.4.0",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^5.4.5"
+>>>>>>> 7e1895f09df44c103ba696f59de5d0ce409db510
   }
 }

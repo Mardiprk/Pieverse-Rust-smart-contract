@@ -1,19 +1,19 @@
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::account_info::Account;
 use anchor_lang::system_program::{transfer, Transfer};
 
 declare_id!("VauLt1111111111111111111111111111111111111");
 
 #[program]
 pub mod vault {
-    use anchor_lang::system_program::Transfer;
 
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
+    pub fn initialize(ctx: Context<Initialize>, max_withdrawl: u64) -> Result<()> {
         let vault = &mut ctx.accounts.vault;
         vault.owner = ctx.accounts.owner.key();
         vault.balance = 0;
+        vault.max_withdrawal = max_withdrawl;
+        vault.paused = false;
         vault.bump = ctx.bumps.vault;
         Ok(())
     }
@@ -37,6 +37,14 @@ pub mod vault {
             .checked_add(amount)
             .ok_or(VaultError::Overflow)?;
 
+        let new_balance = vault.balance;
+    
+        emit!(DepositEvent{
+            vault: ctx.accounts.vault.key(),
+            depositor: ctx.accounts.depositor.key(),
+            amount,
+            new_balance,
+        });
         Ok(())
     }
 
@@ -50,6 +58,8 @@ pub mod vault {
             .balance
             .checked_sub(amount)
             .ok_or(VaultError::InsufficientFunds)?;
+
+        let new_balance = vault.balance;
 
         let vault_lamports = ctx.accounts.vault.to_account_info().lamports();
         let owner_lamports = ctx.accounts.owner.to_account_info().lamports();
@@ -70,6 +80,13 @@ pub mod vault {
             .checked_add(amount)
             .ok_or(VaultError::Overflow)?;
 
+        emit!(WithdrawEvent{
+            vault: ctx.accounts.vault.key(),
+            owner: ctx.accounts.owner.key(),
+            amount,
+            new_balance
+        });
+
         Ok(())
     }
 
@@ -82,6 +99,17 @@ pub mod vault {
 
         Ok(())
 
+    }
+
+    pub fn set_paused(ctx: Context<SetPaused>, paused: bool) -> Result<()>{
+        ctx.accounts.vault.paused = paused;
+
+        emit!(PauseEvent{
+            vault: ctx.accounts.vault.key(),
+            paused
+        });
+
+        Ok(())
     }
 }
 
@@ -131,6 +159,7 @@ pub struct Withdraw<'info> {
     pub owner: Signer<'info>,
 }
 
+
 #[derive(Accounts)]
 pub struct SetPaused<'info> {
     #[account(
@@ -142,12 +171,6 @@ pub struct SetPaused<'info> {
     pub vault: Account<'info, Vault>,
 
     pub owner: Signer<'info>,
-}
-#[event]
-pub struct VaultPaused {
-    pub vault: Pubkey,
-    pub owner: Pubkey,
-    pub swept_lamports: u64,
 }
 
 #[derive(Accounts)]
@@ -172,11 +195,42 @@ pub struct VaultClosed {
     pub swept_lamports: u64,
 }
 
+#[event]
+pub struct DepositEvent {
+    pub vault: Pubkey,
+    pub depositor: Pubkey,
+    pub amount: u64,
+    pub new_balance: u64,
+}
+
+#[event]
+pub struct PauseEvent{
+    pub vault: Pubkey,
+    pub paused: bool
+}
+
+#[event]
+pub struct VaultPaused {
+    pub vault: Pubkey,
+    pub owner: Pubkey,
+    pub swept_lamports: u64,
+}
+
+#[event]
+pub struct WithdrawEvent{
+    pub vault: Pubkey,
+    pub owner: Pubkey,
+    pub amount: u64,
+    pub new_balance: u64,
+}
+
 #[account]
 #[derive(InitSpace)]
 pub struct Vault {
     pub owner: Pubkey,
     pub balance: u64,
+    pub max_withdrawal: u64,
+    pub paused: bool,
     pub bump: u8,
 }
 
